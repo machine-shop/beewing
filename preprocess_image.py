@@ -24,50 +24,23 @@ from skimage.exposure import rescale_intensity
 from skimage.morphology import reconstruction
 
 from skimage.feature import corner_harris, corner_subpix, corner_peaks
+from os import listdir
 
 
-# Load an color image in grayscale
-%matplotlib inline
-for index in range(1,12):
-    image = mpimg.imread("./raw_image/" + str(index) + ".jpg")
-    plt.imshow(image)
-    plt.show()
+files = listdir("./beeWingsChris")
+for f in files:
+#     print (f)
+#     image = mpimg.imread("./raw_image/" + str(index) + ".jpg")
+    image = mpimg.imread("./beeWingsChris/"+f)
 
     img_gray = rgb2gray(image)
-    plt.imshow(img_gray)
-    plt.show()
-
 
     thresh = threshold_otsu(img_gray)
     binary = img_gray > thresh
 
-    # fig, axes = plt.subplots(ncols=3)
-    # ax = axes.ravel()
-    # ax[0] = plt.subplot(1, 3, 1, adjustable='box-forced')
-    # ax[1] = plt.subplot(1, 3, 2)
-    # ax[2] = plt.subplot(1, 3, 3, sharex=ax[0], sharey=ax[0], adjustable='box-forced')
-
-    # plt.imshow(img_gray, cmap=plt.cm.gray)
-    # plt.set_title('Original')
-    # ax[0].axis('off')
-
-    # plt.hist(img_gray.ravel(), bins=256)
-    # plt.set_title('Histogram')
-    # plt.axvline(thresh, color='r')
-
-    plt.imshow(binary, cmap=plt.cm.gray)
-    plt.axis('off')
-    plt.show()
-
-
     # step one for otsu thresholding with appropriate nbins number 
     thresh = threshold_otsu(img_gray, nbins = 60)
     binary = img_gray > thresh
-    plt.imshow(binary, cmap=cm.Greys_r)
-    plt.title('Otsu threshold with nbins = 60')
-    plt.axis('off')
-    plt.show()
-
     binary = resize(binary, (1600, 2000))
 
     # size of blocks
@@ -83,11 +56,6 @@ for index in range(1,12):
     # the `max` or the `median` value of each blocks.
     mean_view = np.mean(flatten_view, axis=2)
 
-    plt.title("Block view with\n local mean pooling")
-    plt.imshow(mean_view, cmap=cm.Greys_r)
-    plt.axis('off')  
-    plt.show()
-
     image = mean_view
     seed = np.copy(mean_view)
     seed[1:-1, 1:-1] = image.max()
@@ -96,16 +64,13 @@ for index in range(1,12):
     #  fill holes (i.e. isolated, dark spots) in an image using morphological reconstruction by erosion
     # plt.title("Filled dark spots by morphological reconstruction")
     filled = reconstruction(seed, mask, method='erosion')
+    plt.figure()
     plt.axis('off')
     plt.imshow(filled, cmap=cm.Greys_r)
-    plt.savefig("enhanced_image/" + str(index) + ".jpg")
-    plt.show()
+    plt.savefig("enhanced_image/" + f)
 
     # step two for label and extract cell
     denoised = denoise_wavelet(filled, multichannel=True)
-    plt.imshow(denoised, cmap=cm.Greys_r)
-    plt.axis('off')
-    plt.show()
 
     image = filled 
     coords1 = corner_peaks(corner_harris(image), min_distance=5)
@@ -116,9 +81,9 @@ for index in range(1,12):
     coords_subpix2 = corner_subpix(image, coords2, window_size=13)
 
     fig, ax = plt.subplots()
+    
     ax.imshow(image, interpolation='nearest', cmap=plt.cm.gray)
     ax.plot(coords_subpix1[:, 1], coords_subpix1[:, 0], '+r', markersize=15)
     ax.plot(coords_subpix2[:, 1], coords_subpix2[:, 0], '+r', markersize=15)
     plt.axis('off')
-    plt.savefig("preprocessed_image/" + str(index) + ".jpg")
-    plt.show()
+    plt.savefig("preprocessed_image/" + f)
