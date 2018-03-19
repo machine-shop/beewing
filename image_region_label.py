@@ -8,8 +8,17 @@ import os
 from skimage.filters import threshold_otsu
 from skimage.segmentation import clear_border
 from skimage.measure import label, regionprops
-from skimage.morphology import closing, square
+from skimage.morphology import closing, square, reconstruction
 from skimage.io import imread
+import matplotlib.image as mpimg
+from skimage.color import rgb2gray
+from skimage.transform import rescale, resize, downscale_local_mean
+from skimage.restoration import (denoise_tv_chambolle, denoise_bilateral,
+                                 denoise_wavelet, estimate_sigma)
+from skimage.exposure import rescale_intensity
+from skimage.util import view_as_blocks
+import matplotlib.cm as cm
+from skimage.feature import corner_harris, corner_subpix, corner_peaks
 
 
 class wing_photo():
@@ -55,23 +64,43 @@ class wing_photo():
         self.feature_vector = [self.num_regions, self.mean_area, self.top, self.species]
         return self.feature_vector
 
-def image_file_scanner(file_name):
-    """takes the location of a file on a computer and returns a list of image paths"""
-    img_list = []
-    for img in os.scandir(file_name):
-        img_list += [img.path]
-    return img_list
+    def image_file_scanner(file_name):
+        """takes the location of a file on a computer and returns a list of image paths"""
+        img_list = []
+        for img in os.scandir(file_name):
+            img_list += [img.path]
+        return img_list
 
-def proprocess_image(image_path):
-    files = listdir(image_path)
+    def create_csv(csv_name, img_list):
+        """Takes in a list of images, creates a csv (CSV_NAME)
+        where each row is a feature vector for the corresponding image"""
+        data = [[]]
+        for img in img_list:
+            #creates photo_class, runs identify_region, appends the list to the data list
+            data.append(wing_photo(img).identify_region())
+
+        #writes the data to a csv
+        myFile = open(csv_name + '.csv', 'w')
+        with myFile:
+            writer = csv.writer(myFile)
+            writer.writerows(data)
+
+"""
+Function for pre-processing bee wing images.
+
+Input: image_path - the relative path to the original image folder
+"""
+def preprocess_image(image_path):
+    files = os.listdir(image_path)
     for f in files:
-        image = mpimg.imread(image_path + f)
-        
+        image = mpimg.imread(image_path + '/' + f)
+
         img_gray = rgb2gray(image)
         thresh = threshold_otsu(img_gray)
         binary = img_gray > thresh
 
-        # step one for otsu thresholding with appropriate nbins number 
+        # Step 1: Proprocess original images into binary images 
+        # otsu thresholding with appropriate nbins number 
         thresh = threshold_otsu(img_gray, nbins = 60)
         binary = img_gray > thresh
         binary = resize(binary, (1600, 2000))
@@ -100,9 +129,9 @@ def proprocess_image(image_path):
         plt.figure()
         plt.axis('off')
         plt.imshow(filled, cmap=cm.Greys_r)
-        plt.savefig("enhanced_image/" + f)
+        plt.savefig("./enhanced_image/" + f)
 
-        # step two for label and extract cell
+        # Step 2: Label Junctions
         denoised = denoise_wavelet(filled, multichannel=True)
 
         image = filled 
@@ -119,18 +148,7 @@ def proprocess_image(image_path):
         ax.plot(coords_subpix1[:, 1], coords_subpix1[:, 0], '+r', markersize=15)
         ax.plot(coords_subpix2[:, 1], coords_subpix2[:, 0], '+r', markersize=15)
         plt.axis('off')
-        plt.savefig(path + "preprocessed_image/" + f)
-
-def create_csv(csv_name, img_list):
-    """Takes in a list of images, creates a csv (CSV_NAME)
-    where each row is a feature vector for the corresponding image"""
-    data = [[]]
-    for img in img_list:
-        #creates photo_class, runs identify_region, appends the list to the data list
-        data.append(wing_photo(img).identify_region())
-
-    #writes the data to a csv
-    myFile = open(csv_name + '.csv', 'w')
-    with myFile:
-        writer = csv.writer(myFile)
-        writer.writerows(data)
+        plt.savefig("./preprocessed_image/" + f)
+  
+# if __name__== "__main__":
+    # preprocess_image("../beeWingsChris")
