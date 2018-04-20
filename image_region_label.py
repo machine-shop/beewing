@@ -31,7 +31,7 @@ class wing_photo():
     def identify_region(self, min_area = 0):
         """Approximates the regions in the image and adds attributes to the image object
         Takes in MIN_AREA as the cutoff for a region to be relevant enough to analyze
-        These attributes include the number of regions, the area of all regions, 
+        These attributes include the number of regions, the area of all regions,
         and the mean of the area of regions. Returns the feature vector"""
         #apply threshold
         thresh = threshold_otsu(self.image)
@@ -99,8 +99,8 @@ def preprocess_image(image_path):
         thresh = threshold_otsu(img_gray)
         binary = img_gray > thresh
 
-        # Step 1: Proprocess original images into binary images 
-        # otsu thresholding with appropriate nbins number 
+        # Step 1: Proprocess original images into binary images
+        # otsu thresholding with appropriate nbins number
         thresh = threshold_otsu(img_gray, nbins = 60)
         binary = img_gray > thresh
         binary = resize(binary, (1600, 2000))
@@ -134,7 +134,7 @@ def preprocess_image(image_path):
         # Step 2: Label Junctions
         denoised = denoise_wavelet(filled, multichannel=True)
 
-        image = filled 
+        image = filled
         coords1 = corner_peaks(corner_harris(image), min_distance=5)
         coords_subpix1 = corner_subpix(image, coords1, window_size=13)
 
@@ -143,12 +143,12 @@ def preprocess_image(image_path):
         coords_subpix2 = corner_subpix(image, coords2, window_size=13)
 
         fig, ax = plt.subplots()
-        
+
         ax.imshow(image, interpolation='nearest', cmap=plt.cm.gray)
         ax.plot(coords_subpix1[:, 1], coords_subpix1[:, 0], '+r', markersize=15)
         ax.plot(coords_subpix2[:, 1], coords_subpix2[:, 0], '+r', markersize=15)
         plt.axis('off')
         plt.savefig("./preprocessed_image/" + f)
-  
+
 # if __name__== "__main__":
     # preprocess_image("../beeWingsChris")

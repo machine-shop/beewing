@@ -5,7 +5,6 @@ Reads in csv file with list of features as well as labeled class,
 and uses a Random Forest Classifer to train and test the data.
 
 '''
-
 import sklearn
 from sklearn.preprocessing import LabelEncoder
 from sklearn.ensemble import RandomForestClassifier
@@ -67,8 +66,8 @@ data = bee_data[bee_data.columns[:3]]
 # print(clf.score(X_test, y_test))
 
 rfc = RandomForestClassifier(random_state=42)
-scores = cross_val_score(rfc, data, target, cv = 5)
-print("Cross Validation Scores (Test Size 0.2): ", scores)
+scores = cross_val_score(rfc, data, target, cv = 4)
+print("Cross Validation Scores (Test Size 0.25): ", scores)
 print("Accuracy: %0.2f (+/- %0.2f)" % (scores.mean(), scores.std() * 2))
 
 cv = ShuffleSplit(n_splits=3, test_size=0.3, random_state=0)
