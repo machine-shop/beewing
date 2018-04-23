@@ -1,3 +1,4 @@
+center_cell_area,center_cell_eccentricity,num_neighbors,average_area_neighbors,sd_neighbors,species
 2846,0.9118472228083812,2,1988.5,94.5,Lasioglossum
 2564,0.885929614122193,4,2443.0,871.1785121316985,Agapostemon
 3967,0.9500716170711428,4,2252.5,548.6130239066514,Agapostemon
