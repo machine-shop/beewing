@@ -27,6 +27,7 @@ def main():
     except getopt.GetoptError:
         print("usage")
         sys.exit(2)
+    pipeline_process = []
     for opt, arg in opts:
         if opt in ('-r', '--raw_image_path'):
             raw_image_path = arg
@@ -34,19 +35,25 @@ def main():
             features_datafile = arg
         if opt in ('-tr', '--train_ratio'):
             train_ratio = arg
+        if opt in ('-p', '--preprocess'):
+            pipeline_process += ['preprocess']
+        if opt in ('-e', '--extraction'):
+            pipeline_process += ['extraction']
+        if opt in ('-t', '--model_training'):
+            pipeline_process += ['model_training']
+
+    # Teating option input:
     #     raw_image_path = "../raw_image"
     #     features_datafile = 'bee_info.csv'
     #     train_ratio = 0.8
 
-    # Proprocess Imgae
-    preprocess_raw_image(path)
-
-    # Feature extraction
-    feature_extract(features_datafile)
-
-    # For Classifcation
-    random_forest_classifier(features_datafile, train_ratio)
-
+    for step in pipeline_process:
+        if step == 'preprocess':  # Proprocess Imgae
+            preprocess_raw_image(path)
+        elif step == 'extraction':  # Feature extraction
+            feature_extract(features_datafile)
+        else:  # For Classifcation
+            random_forest_classifier(features_datafile, train_ratio)
 
 if __name__ == "__main__":
     main()
